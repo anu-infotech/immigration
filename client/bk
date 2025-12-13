@@ -1,0 +1,6 @@
+"bootstrap_calendar": "https://github.com/xero/bootstrap_calendar.git#1.0.1",
+
+"react-export-excel": "^0.5.3",
+
+"node-sass": "4.12.0",
+"webpack-raphael": "2.1.4",

@@ -1,0 +1,11 @@
+.form-groups {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-left: 1px dotted #feb049;
+  padding-left: 10px;
+}
+
+.heading {
+  font-weight: 700;
+}

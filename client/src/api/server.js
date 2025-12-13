@@ -1,0 +1,27 @@
+import Axios from "axios";
+
+const user = JSON.parse(localStorage.getItem("user"));
+let server = null;
+
+if (user) {
+  const type = user.type === "admin" ? true : false;
+  const email = user.email;
+  server = Axios.create({
+    baseURL: "http://localhost:4000",
+    params: {
+      location: localStorage.getItem("branch"),
+      admin: type,
+      email,
+    },
+  });
+} else {
+  server = Axios.create({
+    baseURL: "http://localhost:4000",
+    params: {
+      location: localStorage.getItem("branch"),
+      admin: null,
+    },
+  });
+}
+// https://admin.aussiehub.co.in
+export default server;
