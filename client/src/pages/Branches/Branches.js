@@ -109,7 +109,7 @@ const Branches = ({ branches, getBranches, deleteBranch }) => {
       name: "_id",
       label: "Actions",
       options: {
-        display: (email == 'superadmin@aussiehub.co.in'),
+        display: (email === 'superadmin@aussiehub.co.in'),
         download: false,
         customBodyRender: (value) => {
           return (

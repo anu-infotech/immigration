@@ -17,6 +17,7 @@ class Users extends React.Component {
     this.is_super_admin = user.is_super_admin;
     this.adminid = user.id;
     console.log(this.is_super_admin)
+    // 
   }
 
   componentDidMount() {
