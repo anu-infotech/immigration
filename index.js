@@ -110,11 +110,11 @@ const MONGO_URI =
   "mongodb+srv://hardilsingh87:Hardil@123@cluster0.byanf.gcp.mongodb.net/aussie-hub-db?retryWrites=true&w=majority";
 
   const MONGO_UR2 =
-  "mongodb+srv://rahulsounti_db_user:upVxkMjTbBHL332Z@cluster0.dyf5ezn.mongodb.net/?appName=Cluster0";
+  "mongodb+srv://rahulsounti_db_user:upVxkMjTbBHL332Z@cluster0.dyf5ezn.mongodb.net/aussie-hub-db?appName=Cluster0";
 
   
 mongoose.connect(
-  MONGO_URI,
+  MONGO_UR2,
   {
     useUnifiedTopology: true,
     useNewUrlParser: true,

@@ -14,7 +14,9 @@ class Users extends React.Component {
     const user = JSON.parse(localStorage.getItem("user"));
     this.role = user.type;
     this.email = user.email;
+    this.is_super_admin = user.is_super_admin;
     this.adminid = user.id;
+    console.log(this.is_super_admin)
   }
 
   componentDidMount() {
@@ -95,7 +97,7 @@ class Users extends React.Component {
           label: "Role",
           options: {
             customBodyRender: (value, tableMeta) => {
-              console.log(tableMeta);
+              // console.log(tableMeta);
               return (
                 <div>
                   <Select
@@ -151,7 +153,7 @@ class Users extends React.Component {
                     </Link>
 
                     <Button
-                      className={ this.email == value? 'd-none':'' }
+                      className={ (this.email === 'superadmin@aussiehub.co.in') ? '':'d-none' }
                       color="danger"
                       style={{ marginLeft: "10px" }}
                       size={"sm"}

@@ -23,7 +23,9 @@ const Branches = ({ branches, getBranches, deleteBranch }) => {
 
 
 
-
+  const user = JSON.parse(localStorage.getItem("user"));
+  const role = user.type;
+  const email = user.email;
   const [selected, setSelected] = useState(null);
   const [selectedData, setSelectedData] = useState(null);
   const [edit, setEdit] = useState(false);
@@ -107,6 +109,7 @@ const Branches = ({ branches, getBranches, deleteBranch }) => {
       name: "_id",
       label: "Actions",
       options: {
+        display: (email == 'superadmin@aussiehub.co.in'),
         download: false,
         customBodyRender: (value) => {
           return (
