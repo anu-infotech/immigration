@@ -21,6 +21,7 @@ class RejectedAssessments extends React.Component {
     this.role = this.user.type;
     this.setState({ running: false });
     this.selected_branch = localStorage.getItem("branch");
+
   }
 
   state = { running: true };
@@ -173,13 +174,14 @@ class RejectedAssessments extends React.Component {
           </Tabs>
         );
       }
-      if (this.role == 'manager') {
+      if (this.role === 'manager') {
+        const selected_branch = localStorage.getItem("branch");
         return (
           <div>
             <MUIDataTable
               title={"Inactive Assessments"}
               data={this.props.assessments.filter(
-                (assessment) => assessment.location.value === this.selected_branch
+                (assessment) => (assessment.location.value == selected_branch)
               )}
               columns={columns}
               options={options}

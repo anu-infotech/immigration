@@ -485,7 +485,8 @@ const ViewAssessment = ({
                     {assessment.case_handled_by ? (
                       assessment.case_handled_by.email === email ||
                       role === "admin" ||
-                      role === "Admission" ? (
+                      role === "Admission" || 
+                      role === "manager" ? (
                         <React.Fragment>
                           <Tab>Upload Webcam Photo</Tab>
                           <Tab>Remarks</Tab>
@@ -505,10 +506,6 @@ const ViewAssessment = ({
                         </React.Fragment>
                       ) : null
                     ) : null}
-                    {  role === "manager"?(
-                      <Tab>Transfer Assessment</Tab>
-                      ): null
-                    }
                   </TabList>
                     <TabPanel>
                     <Row>
@@ -560,7 +557,8 @@ const ViewAssessment = ({
                    {assessment.case_handled_by ? (
                       assessment.case_handled_by.email === email ||
                       role === "admin" ||
-                      role === "Admission" ? (
+                      role === "Admission" ||
+                      role === "manager" ? (
                     <React.Fragment>
                   
                   <TabPanel>
@@ -683,15 +681,6 @@ const ViewAssessment = ({
                   </React.Fragment>
                   ) : null
                     ) : null}
-                    {  role === "manager"?(
-                       <React.Fragment> 
-                    
-                        <TabPanel>
-                          <TransferAssessment />
-                         </TabPanel>
-                         </React.Fragment>
-                      ): null
-                    }
                 </Tabs>
               </div>
             </Widget>

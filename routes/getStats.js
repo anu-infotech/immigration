@@ -4,10 +4,10 @@ const Admin = require("../model/Admin");
 const router = express.Router();
 
 const getStatsRouter = router.get("/api/getStats", async (req, res) => {
-  const { email, admin } = req.query;
-  console.log(email);
+  const { email, admin, type, branch } = req.query;
+  console.log(branch);
   try {
-    if (admin == "true") {
+    if (type == "admin") {
       let adminApplication = [];
       let adminOffers = [];
       let adminVisas = [];
@@ -40,7 +40,7 @@ const getStatsRouter = router.get("/api/getStats", async (req, res) => {
 
       const visas = active.map((assessment) => {
         return assessment.visas.map((visa) => {
-          if (visa.status === "Visa Recevied") {
+          if (visa.status.value == "Visa Recevied") {
             return adminVisas.push(visa);
           }
         });
@@ -53,7 +53,61 @@ const getStatsRouter = router.get("/api/getStats", async (req, res) => {
         offerLetters: adminOffers.length,
         visas: adminVisas.length,
       });
-    } else if (admin == "false") {
+    } else if (type == 'manager') {
+      let adminApplication = [];
+      let adminOffers = [];
+      let adminVisas = [];
+
+      const active = await Enquiry.find({
+        "location.value": branch,
+        accepted: true,
+      });
+      const rejected = await Enquiry.find({
+        "location.value": branch,
+        accepted: false,
+      });
+      const unattended = await Enquiry.find({
+        "location.value": branch,
+        accepted: null,
+      });
+
+      const applications = active.map((assessment) => {
+        return assessment.applications.map((app) => {
+          return adminApplication.push(app);
+        });
+      });
+
+      const offers = active.map((assessment) => {
+        return assessment.offerLetters.map((offer) => {
+          if (
+            offer.status.label === "Conditional" ||
+            offer.status.label === "Unconditional"
+          ) {
+            return adminOffers.push(offer);
+          }
+        });
+      });
+
+
+      const visas = active.map((assessment) => {
+        return assessment.visas.map((visa) => {
+          console.log(visa);
+          if (visa.status.value == "Visa Recevied") {
+            return adminVisas.push(visa);
+          }
+        });
+      });
+
+      return res.send({
+        active: active.length,
+        rejected: rejected.length,
+        unattended: unattended.length,
+        applications: adminApplication.length,
+        offerLetters: adminOffers.length,
+        visas: adminVisas.length,
+      });
+    }
+    else if (type == 'user') {
       let adminApplication = [];
       let adminOffers = [];
       let adminVisas = [];
@@ -88,7 +142,7 @@ const getStatsRouter = router.get("/api/getStats", async (req, res) => {
 
       const visas = active.map((assessment) => {
         return assessment.visas.map((visa) => {
-          if (visa.status === "Visa Recevied") {
+          if (visa.status.value == "Visa Recevied") {
             return adminVisas.push(visa);
           }
         });

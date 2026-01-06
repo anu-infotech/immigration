@@ -139,7 +139,6 @@ class Sidebar extends React.Component {
                 activeItem={this.props.activeItem}
                 header="Create Assessment"
                 isHeader
-                showNavItem={this.role !== 'manager'?true:false}
                 link="/app/create-assessment"
               >
                 {window.location.href.includes("create-assessment") ? (
@@ -301,6 +300,7 @@ class Sidebar extends React.Component {
                 isHeader
                 link="/app/P&L"
                 index="main"
+                showNavItem={(this.role === 'admin' || this.role === 'manager')?true:false}
               >
                 {window.location.href.includes("P&L") ? (
                   <img

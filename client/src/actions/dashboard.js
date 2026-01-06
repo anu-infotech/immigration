@@ -5,11 +5,13 @@ export const GET_STATS = 'GET_STATS'
 
 export function getStats() {
   return async (dispatch) => {
-    const branch = localStorage.getItem('branch')
+    const branch = localStorage.getItem('branch');
+     const user = JSON.parse(localStorage.getItem("user"));
+      const type = user.type;
     try {
       const res = await server.get('/api/getStats', {
         params: {
-          branch,
+          branch,type
         },
       })
       dispatch({

@@ -7,581 +7,257 @@ import {
 } from "../../actions/assessment";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import MUIDataTable from "mui-datatables";
-import { Button, Col, Row } from "reactstrap";
+import { Col, Row } from "reactstrap";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import { FontAwesome } from "react-web-vector-icons";
 import { Link } from "react-router-dom";
+import { getBranchesList } from "../../actions/branches";
 
 class AllFollowups extends React.Component {
+  state = { running: true };
+
   async componentDidMount() {
     await this.props.getActiveAssessments();
+
     this.user = JSON.parse(localStorage.getItem("user"));
+    this.selectedBranch = localStorage.getItem("branch");
     this.role = this.user.type;
+
+    const branches = await getBranchesList();
+    this.branches = branches;
+
+
     this.followups = [];
-    this.adminGsp = [];
-    this.adminBat = [];
+    this.branchFollowups = {};
 
-    const gurdaspurFiltered = this.props.assessments.filter((assessment) => {
-      if (assessment.location.value === "gurdaspur") {
-        return assessment;
+    /* init branches */
+    branches.forEach((b) => {
+      this.branchFollowups[b.slug] = [];
+    });
+
+    /* ADMIN → branch-wise followups */
+    this.props.assessments.forEach((assessment) => {
+      const branch = assessment.location?.value;
+      if (branch && this.branchFollowups[branch]) {
+        assessment.followUps.forEach((fu) => {
+          this.branchFollowups[branch].push(fu);
+        });
       }
     });
 
-    const allApplicationsGsp = gurdaspurFiltered.map((application) => {
-      return application.followUps;
-    });
+    console.log(this.branchFollowups);
 
-    for (let index = 0; index < allApplicationsGsp.length; index++) {
-      allApplicationsGsp[index].map((app) => {
-        return this.adminGsp.push(app);
-      });
-    }
-
-    const batalaFiltered = this.props.assessments.filter((assessment) => {
-      if (assessment.location.value === "batala") {
-        return assessment;
+    /* NON-ADMIN → own followups */
+    const email = this.user.email;
+    this.props.assessments.forEach((assessment) => {
+      if (
+        assessment.case_handled_by &&
+        assessment.case_handled_by.email === email
+      ) {
+        assessment.followUps.forEach((fu) => {
+          this.followups.push(fu);
+        });
       }
     });
 
-    const allApplicationsBat = batalaFiltered.map((application) => {
-      return application.followUps;
-    });
-
-    for (let index = 0; index < allApplicationsBat.length; index++) {
-      allApplicationsBat[index].map((app) => {
-        return this.adminBat.push(app);
-      });
-    }
-
-    const filteredItems = this.props.assessments.filter((assessment) => {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const email = user.email;
-      if (assessment.case_handled_by) {
-        if (assessment.case_handled_by.email === email) {
-          return assessment;
-        }
-      }
-    });
-
-    const allApplications = filteredItems.map((application) => {
-      return application.followUps;
-    });
-
-    for (let index = 0; index < allApplications.length; index++) {
-      allApplications[index].map((app) => {
-        return this.followups.push(app);
-      });
-    }
     this.setState({ running: false });
   }
 
-  state = { running: true };
+  /* 🔹 FILTER HELPERS */
+  filterFollowups = (data, type) => {
+    const today = new Date().toLocaleDateString();
+
+    return data.filter((follow) => {
+      const date = new Date(follow.followUpDate);
+
+      if (type === "completed") return follow.remarks !== null;
+      if (type === "today")
+        return (
+          follow.remarks === null &&
+          date.toLocaleDateString() === today
+        );
+      if (type === "upcoming")
+        return follow.remarks === null && date > new Date();
+      if (type === "pending")
+        return follow.remarks === null && date < new Date();
+
+      return false;
+    });
+  };
 
   render() {
-    if (!this.props.assessments || this.state.running === true) {
+    if (!this.props.assessments || this.state.running) {
       return (
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <PacmanLoader size={30} color={"#FEB049"} loading={true} />
+        <div style={{ position: "absolute", top: "50%", left: "50%" }}>
+          <PacmanLoader size={30} color={"#FEB049"} loading />
         </div>
       );
-    } else {
-      const columns = [
-        {
-          name: "assessmentId",
-          label: "Client",
-          options: {
-            filter: false,
-            customBodyRender: (value) => {
-              const assessment = this.props.assessments.find(
-                (assessment) => assessment.ref_no == value
-              );
+    }
 
-              return (
-                <div>
-                  <span>
-                    {assessment.first_name + " " + assessment.surname}
-                  </span>
-                  <br></br>
-                  <br></br>
-                  <Link to={`/app/view-assessment/${value}`}>{value}</Link>
-                  <br></br>
-                  <br></br>
-                  <span>{assessment.email}</span>
-                </div>
-              );
-            },
+    /* 🔹 COLUMNS (UNCHANGED) */
+    const columns = [
+      {
+        name: "assessmentId",
+        label: "Client",
+        options: {
+          filter: false,
+          customBodyRender: (value) => {
+            const assessment = this.props.assessments.find(
+              (a) => a.ref_no == value
+            );
+            return (
+              <div>
+                <b>{assessment.first_name} {assessment.surname}</b>
+                <br /><br />
+                <Link to={`/app/view-assessment/${value}`}>{value}</Link>
+                <br /><br />
+                {assessment.email}
+              </div>
+            );
           },
         },
-        {
-          name: "mobile",
-          label: "Mobile",
-          options: {
-            filter: false,
-          },
+      },
+      { name: "mobile", label: "Mobile" },
+      { name: "caseHandler", label: "Couns." },
+      {
+        name: "remarks",
+        label: "Remarks",
+        options: {
+          customBodyRender: (v) => (
+            <textarea className="form-control" rows="6" readOnly>
+              {v}
+            </textarea>
+          ),
         },
-        {
-          name: "caseHandler",
-          label: "Couns.",
+      },
+      {
+        name: "nextFollowUpDate",
+        label: "Next",
+        options: {
+          customBodyRender: (v) => new Date(v).toLocaleDateString(),
         },
-        {
-          name: "spoken",
-          label: "Spoken",
-          options: {
-            display: false,
-            customBodyRender: (value) => {
-              return value.label;
-            },
-          },
-        },
-        {
-          name: "studentStatus",
-          label: "Details",
-          options: {
-            filter: false,
-            customBodyRender: (value, tableMeta) => {
-              return (
-                <div>
-                  <span>
-                    {new Date(tableMeta.rowData[6]).toLocaleDateString()}
-                  </span>
+      },
+    ];
 
-                  <br></br>
-                  <br></br>
-                  <span>{tableMeta.rowData[5].label}</span>
-                  <br></br>
-                  <br></br>
-                  <span>{tableMeta.rowData[3].label}</span>
+    const options = {
+      selectableRows: false,
+      download: false,
+      print: false,
+      filterType: "multiselect",
+    };
 
-                  <br></br>
-                  <br></br>
-                  <span>{value.label}</span>
-                </div>
-              );
-            },
-          },
-        },
-
-        {
-          name: "action",
-          label: "Action",
-          options: {
-            display: false,
-            customBodyRender: (value) => {
-              return value.label;
-            },
-          },
-        },
-        {
-          name: "followUpDate",
-          label: "Date",
-          options: {
-            display: false,
-            filter: false,
-            customBodyRender: (value) => {
-              return new Date(value).toLocaleDateString();
-            },
-          },
-        },
-        {
-          name: "studentStatus",
-          label: "Student Status",
-          options: {
-            display: false,
-            filter: true,
-            customBodyRender: (value) => {
-              return value.label;
-            },
-          },
-        },
-        {
-          name: "remarks",
-          label: "Remarks",
-          options: {
-            filter: false,
-            customBodyRender: (value) => {
-              return (
-                <textarea className="form-control" readOnly rows="6">
-                  {value}
-                </textarea>
-              );
-            },
-          },
-        },
-        {
-          name: "nextFollowUpDate",
-          label: "Next",
-          options: {
-            customBodyRender: (value) => {
-              return new Date(value).toLocaleDateString();
-            },
-          },
-        },
-      ];
-
-      const columns1 = [
-        {
-          name: "assessmentId",
-          label: "Client",
-          options: {
-            filter: false,
-            customBodyRender: (value) => {
-              const assessment = this.props.assessments.find(
-                (assessment) => assessment.ref_no == value
-              );
-
-              return (
-                <div>
-                  <span>
-                    {assessment.first_name + " " + assessment.surname}
-                  </span>
-                  <br></br>
-                  <br></br>
-                  <Link to={`/app/view-assessment/${value}`}>{value}</Link>
-                  <br></br>
-                  <br></br>
-                  <span>{assessment.email}</span>
-                </div>
-              );
-            },
-          },
-        },
-        {
-          name: "mobile",
-          label: "Mobile",
-          options: {
-            filter: false,
-          },
-        },
-        {
-          name: "caseHandler",
-          label: "Couns.",
-        },
-        {
-          name: "action",
-          label: "Action",
-          options: {
-            customBodyRender: (value) => {
-              return value.label;
-            },
-          },
-        },
-        {
-          name: "followUpDate",
-          label: "Date",
-          options: {
-            filter: false,
-            customBodyRender: (value) => {
-              return new Date(value).toDateString();
-            },
-          },
-        },
-      ];
-
-      const options = {
-        selectableRows: false,
-        download: false,
-        print: false,
-        filterType: "multiselect",
-      };
-      if (this.role === "admin") {
-        return (
-          <Tabs>
-            <TabList>
-              <Tab>Gurdaspur</Tab>
-              <Tab>Batala</Tab>
-            </TabList>
-
-            <TabPanel>
-              <Tabs style={{marginTop: "30px"}}>
-                <TabList>
-                  <Tab>Completed</Tab>
-                  <Tab>Today</Tab>
-                  <Tab>Upcoming</Tab>
-                  <Tab>Pending</Tab>
-                </TabList>
-
-                <TabPanel>
-                  <Row>
-                    <Col lg={12}>
-                      <MUIDataTable
-                        style={{ textTransform: "capitalize" }}
-                        title={"List of completed FollowUp(s)"}
-                        data={this.adminGsp.filter(
-                          (follow) => follow.remarks !== null
-                        )}
-                        columns={columns}
-                        options={options}
-                      />
-                    </Col>
-                  </Row>
-                </TabPanel>
-                <TabPanel>
-                  <Row>
-                    <Col lg={12}>
-                      <MUIDataTable
-                        style={{ textTransform: "capitalize" }}
-                        title={"List of Today FollowUp(s)"}
-                        data={this.adminGsp.filter((follow) => {
-                          if (
-                            follow.remarks === null &&
-                            new Date(
-                              follow.followUpDate
-                            ).toLocaleDateString() ==
-                              new Date(Date.now()).toLocaleDateString()
-                          )
-                            return follow;
-                        })}
-                        columns={columns1}
-                        options={options}
-                      />
-                    </Col>
-                  </Row>
-                </TabPanel>
-
-                <TabPanel>
-                  <Row>
-                    <Col lg={12}>
-                      <MUIDataTable
-                        style={{ textTransform: "capitalize" }}
-                        title={"List of upcoming FollowUp(s)"}
-                        data={this.adminGsp.filter((follow) => {
-                          if (
-                            follow.remarks === null &&
-                            new Date(follow.followUpDate).valueOf() >
-                              new Date(Date.now()).valueOf()
-                          )
-                            return follow;
-                        })}
-                        columns={columns1}
-                        options={options}
-                      />
-                    </Col>
-                  </Row>
-                </TabPanel>
-                <TabPanel>
-                  <Row>
-                    <Col lg={12}>
-                      <MUIDataTable
-                        style={{ textTransform: "capitalize" }}
-                        title={"List of pending FollowUp(s)"}
-                        data={this.adminGsp.filter((follow) => {
-                          if (
-                            follow.remarks === null &&
-                            new Date(follow.followUpDate).valueOf() <
-                              new Date(Date.now()).valueOf()
-                          )
-                            return follow;
-                        })}
-                        columns={columns1}
-                        options={options}
-                      />
-                    </Col>
-                  </Row>
-                </TabPanel>
-              </Tabs>
-            </TabPanel>
-            <TabPanel>
-              <Tabs style={{marginTop: "30px"}}>
-                <TabList>
-                  <Tab>Completed</Tab>
-                  <Tab>Today</Tab>
-                  <Tab>Upcoming</Tab>
-                  <Tab>Pending</Tab>
-                </TabList>
-                <TabPanel>
-                  <Row>
-                    <Col lg={12}>
-                      <MUIDataTable
-                        style={{ textTransform: "capitalize" }}
-                        title={"List of completed FollowUp(s)"}
-                        data={this.adminBat.filter(
-                          (follow) => follow.remarks !== null
-                        )}
-                        columns={columns}
-                        options={options}
-                      />
-                    </Col>
-                  </Row>
-                </TabPanel>
-                <TabPanel>
-                  <Row>
-                    <Col lg={12}>
-                      <MUIDataTable
-                        style={{ textTransform: "capitalize" }}
-                        title={"List of Today FollowUp(s)"}
-                        data={this.adminBat.filter((follow) => {
-                          if (
-                            follow.remarks === null &&
-                            new Date(
-                              follow.followUpDate
-                            ).toLocaleDateString() ==
-                              new Date(Date.now()).toLocaleDateString()
-                          )
-                            return follow;
-                        })}
-                        columns={columns1}
-                        options={options}
-                      />
-                    </Col>
-                  </Row>
-                </TabPanel>
-
-                <TabPanel>
-                  <Row>
-                    <Col lg={12}>
-                      <MUIDataTable
-                        style={{ textTransform: "capitalize" }}
-                        title={"List of upcoming FollowUp(s)"}
-                        data={this.adminBat.filter((follow) => {
-                          if (
-                            follow.remarks === null &&
-                            new Date(follow.followUpDate).valueOf() >
-                              new Date(Date.now()).valueOf()
-                          )
-                            return follow;
-                        })}
-                        columns={columns1}
-                        options={options}
-                      />
-                    </Col>
-                  </Row>
-                </TabPanel>
-                <TabPanel>
-                  <Row>
-                    <Col lg={12}>
-                      <MUIDataTable
-                        style={{ textTransform: "capitalize" }}
-                        title={"List of pending FollowUp(s)"}
-                        data={this.adminBat.filter((follow) => {
-                          if (
-                            follow.remarks === null &&
-                            new Date(follow.followUpDate).valueOf() <
-                              new Date(Date.now()).valueOf()
-                          )
-                            return follow;
-                        })}
-                        columns={columns1}
-                        options={options}
-                      />
-                    </Col>
-                  </Row>
-                </TabPanel>
-              </Tabs>
-            </TabPanel>
-          </Tabs>
-        );
-      }
+    /* 🔹 ADMIN VIEW */
+    if (this.role === "admin") {
       return (
-        <div>
-          <Tabs>
-            <TabList>
-              <Tab>Completed</Tab>
-              <Tab>Today</Tab>
-              <Tab>Upcoming</Tab>
-              <Tab>Pending</Tab>
-            </TabList>
+        <Tabs>
+          <TabList>
+            {this.branches.map((b) => (
+              <Tab key={b.slug}>{b.name}</Tab>
+            ))}
+          </TabList>
 
-            <TabPanel>
-              <Row>
-                <Col lg={12}>
-                  <MUIDataTable
-                    style={{ textTransform: "capitalize" }}
-                    title={"List of completed FollowUp(s)"}
-                    data={this.followups.filter(
-                      (follow) => follow.remarks !== null
+          {this.branches.map((branch) => (
+            <TabPanel key={branch.slug}>
+              <Tabs style={{ marginTop: "30px" }}>
+                <TabList>
+                  <Tab>Completed</Tab>
+                  <Tab>Today</Tab>
+                  <Tab>Upcoming</Tab>
+                  <Tab>Pending</Tab>
+                </TabList>
+
+                {["completed", "today", "upcoming", "pending"].map((type) => (
+                  <TabPanel key={type}>
+                    <Row>
+                      <Col lg={12}>
+                        <MUIDataTable
+                          title={`List of ${type} FollowUp(s)`}
+                          data={this.filterFollowups(
+                            this.branchFollowups[branch.slug],
+                            type
+                          )}
+                          columns={columns}
+                          options={options}
+                        />
+                      </Col>
+                    </Row>
+                  </TabPanel>
+                ))}
+              </Tabs>
+            </TabPanel>
+          ))}
+        </Tabs>
+      );
+    }
+
+    /* 🔹 ADMIN VIEW */
+    if (this.role === "manager") {
+      return (
+        <Tabs>
+        <TabList>
+          <Tab>Completed</Tab>
+          <Tab>Today</Tab>
+          <Tab>Upcoming</Tab>
+          <Tab>Pending</Tab>
+        </TabList>
+
+        {["completed", "today", "upcoming", "pending"].map((type) => (
+          <TabPanel key={type}>
+            <Row>
+              <Col lg={12}>
+                <MUIDataTable
+                    title={`List of ${type} FollowUp(s)`}
+                    data={this.filterFollowups(
+                      this.branchFollowups[this.selectedBranch],
+                      type
                     )}
                     columns={columns}
                     options={options}
                   />
-                </Col>
-              </Row>
-            </TabPanel>
-            <TabPanel>
-              <Row>
-                <Col lg={12}>
-                  <MUIDataTable
-                    style={{ textTransform: "capitalize" }}
-                    title={"List of Today FollowUp(s)"}
-                    data={this.followups.filter((follow) => {
-                      if (
-                        follow.remarks === null &&
-                        new Date(follow.followUpDate).toLocaleDateString() ==
-                          new Date(Date.now()).toLocaleDateString()
-                      )
-                        return follow;
-                    })}
-                    columns={columns1}
-                    options={options}
-                  />
-                </Col>
-              </Row>
-            </TabPanel>
-            <TabPanel>
-              <Row>
-                <Col lg={12}>
-                  <MUIDataTable
-                    style={{ textTransform: "capitalize" }}
-                    title={"List of upcoming FollowUp(s)"}
-                    data={this.followups.filter((follow) => {
-                      if (
-                        follow.remarks === null &&
-                        new Date(follow.followUpDate).valueOf() >
-                          new Date(Date.now()).valueOf()
-                      )
-                        return follow;
-                    })}
-                    columns={columns1}
-                    options={options}
-                  />
-                </Col>
-              </Row>
-            </TabPanel>
-            <TabPanel>
-              <Row>
-                <Col lg={12}>
-                  <MUIDataTable
-                    style={{ textTransform: "capitalize" }}
-                    title={"List of pending FollowUp(s)"}
-                    data={this.followups.filter((follow) => {
-                      if (
-                        follow.remarks === null &&
-                        new Date(follow.followUpDate).valueOf() <
-                          new Date(Date.now()).valueOf()
-                      )
-                        return follow;
-                    })}
-                    columns={columns1}
-                    options={options}
-                  />
-                </Col>
-              </Row>
-            </TabPanel>
-          </Tabs>
-        </div>
+              </Col>
+            </Row>
+          </TabPanel>
+        ))}
+      </Tabs>
       );
     }
+
+    /* 🔹 NON-ADMIN VIEW */
+    return (
+      <Tabs>
+        <TabList>
+          <Tab>Completed</Tab>
+          <Tab>Today</Tab>
+          <Tab>Upcoming</Tab>
+          <Tab>Pending</Tab>
+        </TabList>
+
+        {["completed", "today", "upcoming", "pending"].map((type) => (
+          <TabPanel key={type}>
+            <Row>
+              <Col lg={12}>
+                <MUIDataTable
+                  title={`List of ${type} FollowUp(s)`}
+                  data={this.filterFollowups(this.followups, type)}
+                  columns={columns}
+                  options={options}
+                />
+              </Col>
+            </Row>
+          </TabPanel>
+        ))}
+      </Tabs>
+    );
   }
 }
 
-const mapStateToProps = (state) => {
-  return { assessments: state.assessment };
-};
-const decoratedComponent = withRouter(
+const mapStateToProps = (state) => ({
+  assessments: state.assessment,
+});
+
+export default withRouter(
   connect(mapStateToProps, {
     getActiveAssessments,
-    deleteApplication: deleteApplication,
+    deleteApplication,
   })(AllFollowups)
 );
-
-export default decoratedComponent;

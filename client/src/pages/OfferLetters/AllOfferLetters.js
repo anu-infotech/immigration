@@ -7,97 +7,70 @@ import {
 } from "../../actions/assessment";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import MUIDataTable from "mui-datatables";
-import { Button } from "reactstrap";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { FontAwesome } from "react-web-vector-icons";
 import { Link } from "react-router-dom";
 import { createDataSet } from "./createExcel";
+import { getBranchesList } from "../../actions/branches";
 
 class AllOfferLetters extends React.Component {
+  state = { running: true };
+
   async componentDidMount() {
     await this.props.getActiveAssessments();
+
     this.user = JSON.parse(localStorage.getItem("user"));
+    this.selectedBranch = localStorage.getItem("branch");
     this.role = this.user.type;
+
+    const branches = await getBranchesList();
+    this.branches = branches;
+
     this.offers = [];
-    this.adminGsp = [];
-    this.adminBat = [];
+    this.branchOffers = {};
 
-    const gurdaspurFiltered = this.props.assessments.filter((assessment) => {
-      if (assessment.location.value === "gurdaspur") {
-        return assessment;
+    /* INIT BRANCH BUCKETS */
+    branches.forEach((b) => {
+      this.branchOffers[b.slug] = [];
+    });
+
+    /* ADMIN / MANAGER → BRANCH-WISE OFFERS */
+    this.props.assessments.forEach((assessment) => {
+      const branch = assessment.location?.value;
+      if (branch && this.branchOffers[branch]) {
+        assessment.offerLetters.forEach((offer) => {
+          this.branchOffers[branch].push(offer);
+        });
       }
     });
 
-    const allApplicationsGsp = gurdaspurFiltered.map((application) => {
-      return application.offerLetters;
-    });
-
-    for (let index = 0; index < allApplicationsGsp.length; index++) {
-      allApplicationsGsp[index].map((app) => {
-        return this.adminGsp.push(app);
-      });
-    }
-
-    const batalaFiltered = this.props.assessments.filter((assessment) => {
-      if (assessment.location.value === "batala") {
-        return assessment;
+    /* NON-ADMIN → OWN OFFERS */
+    const email = this.user.email;
+    this.props.assessments.forEach((assessment) => {
+      if (
+        assessment.case_handled_by &&
+        assessment.case_handled_by.email === email
+      ) {
+        assessment.offerLetters.forEach((offer) => {
+          this.offers.push(offer);
+        });
       }
     });
 
-    const allApplicationsBat = batalaFiltered.map((application) => {
-      return application.offerLetters;
-    });
-
-    for (let index = 0; index < allApplicationsBat.length; index++) {
-      allApplicationsBat[index].map((app) => {
-        return this.adminBat.push(app);
-      });
-    }
-
-    const filteredItems = this.props.assessments.filter((assessment) => {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const email = user.email;
-      if (assessment.case_handled_by) {
-        if (assessment.case_handled_by.email === email) {
-          return assessment;
-        }
-      }
-    });
-
-    const allApplications = filteredItems.map((application) => {
-      return application.offerLetters;
-    });
-
-    for (let index = 0; index < allApplications.length; index++) {
-      allApplications[index].map((app) => {
-        return this.offers.push(app);
-      });
-    }
     this.setState({ running: false });
   }
 
-  state = { running: true };
-
   render() {
-    if (!this.props.assessments || this.state.running === true) {
+    if (!this.props.assessments || this.state.running) {
       return (
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <PacmanLoader size={30} color={"#FEB049"} loading={true} />
+        <div style={{ position: "absolute", top: "50%", left: "50%" }}>
+          <PacmanLoader size={30} color={"#FEB049"} loading />
         </div>
       );
-    } else {
-      const columns = [
+    }
+
+    const columns = [
         {
           name: "name",
           label: "Client",
@@ -323,71 +296,79 @@ class AllOfferLetters extends React.Component {
         },
       ];
 
-      const options = {
-        selectableRows: false,
-        download: false,
-        print: false,
-        filterType: "multiselect",
-        onDownload: (buildHead, buildBody, columns, data) => {
-          return "\uFEFF" + buildHead(columns) + buildBody(data);
-        },
-      };
-      if (this.role === "admin") {
-        return (
-          <Tabs>
-            <TabList>
-              <Tab>Gurdaspur</Tab>
-              <Tab>Batala</Tab>
-            </TabList>
+    const options = {
+      selectableRows: false,
+      download: false,
+      print: false,
+      filterType: "multiselect",
+      onDownload: (buildHead, buildBody, columns, data) =>
+        "\uFEFF" + buildHead(columns) + buildBody(data),
+    };
 
-            <TabPanel>
-              <div>
-                {createDataSet(this.adminGsp.reverse())}
-                <MUIDataTable
-                  title={"Applications"}
-                  data={this.adminGsp.reverse()}
-                  columns={columns}
-                  options={options}
-                />
-              </div>
+    /* 🔹 ADMIN VIEW */
+    if (this.role === "admin") {
+      return (
+        <Tabs>
+          <TabList>
+            {this.branches.map((b) => (
+              <Tab key={b.slug}>{b.name}</Tab>
+            ))}
+          </TabList>
+
+          {this.branches.map((branch) => (
+            <TabPanel key={branch.slug}>
+              {createDataSet([...this.branchOffers[branch.slug]].reverse())}
+              <MUIDataTable
+                title="Applications"
+                data={[...this.branchOffers[branch.slug]].reverse()}
+                columns={columns}
+                options={options}
+              />
             </TabPanel>
-            <TabPanel>
-              <div>
-                {createDataSet(this.adminBat.reverse())}
-                <MUIDataTable
-                  title={"Applications"}
-                  data={this.adminBat.reverse()}
-                  columns={columns}
-                  options={options}
-                />
-              </div>
-            </TabPanel>
-          </Tabs>
-        );
-      }
+          ))}
+        </Tabs>
+      );
+    }
+
+    /* 🔹 MANAGER VIEW (SELECTED BRANCH) */
+    if (this.role === "manager") {
       return (
         <div>
-          {createDataSet(this.offers.reverse())}
+          {createDataSet(
+            [...this.branchOffers[this.selectedBranch]].reverse()
+          )}
           <MUIDataTable
-            title={"Applications"}
-            data={this.offers.reverse()}
+            title="Applications"
+            data={[...this.branchOffers[this.selectedBranch]].reverse()}
             columns={columns}
             options={options}
           />
         </div>
       );
     }
+
+    /* 🔹 NON-ADMIN VIEW */
+    return (
+      <div>
+        {createDataSet([...this.offers].reverse())}
+        <MUIDataTable
+          title="Applications"
+          data={[...this.offers].reverse()}
+          columns={columns}
+          options={options}
+        />
+      </div>
+    );
   }
 }
 
-const mapStateToProps = (state) => {
-  return { assessments: state.assessment };
-};
-const decoratedComponent = withRouter(
+const mapStateToProps = (state) => ({
+  assessments: state.assessment,
+});
+
+export default withRouter(
   connect(mapStateToProps, {
     getActiveAssessments,
-    deleteApplication: deleteApplication,
+    deleteApplication,
   })(AllOfferLetters)
 );
-
-export default decoratedComponent;

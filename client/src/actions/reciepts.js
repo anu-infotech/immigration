@@ -24,8 +24,15 @@ export const getReciepts = (assessmentId) => {
 
 export const getAllReciepts = () => {
   return async (dispatch) => {
+    const branch = localStorage.getItem('branch');
+    const user = JSON.parse(localStorage.getItem("user"));
+    const type = user.type;
     try {
-      const res = await server.get("/api/receipts");
+      const res = await server.get("/api/receipts", {
+        params: {
+          branch,type
+        },
+      });
       dispatch({
         type: RECIEPT,
         payload: res.data,

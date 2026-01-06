@@ -1,21 +1,43 @@
 const express = require("express");
 const Enquiry = require("../../model/Enquiry");
-const Reciept = require("../../model/Reciepts");
+const Receipt = require("../../model/Reciepts");
 const router = express.Router();
 
-const getAllReceipts = router.get(
-  "/api/receipts",
-  async (req, res) => {
-    try {
-      const data = await Reciept.find();
+router.get("/api/receipts", async (req, res) => {
+  const { branch, type } = req.query;
 
-      return res.send(data); //send the data to the front end to be displayed in the table in the front end page for the student to see the reciepts of the assessment they have made for the school year they have selected in the front end page.
-    } catch (error) {
-      return res.status(200).json({
-        message: "Server Error",
+  try {
+    let receipts = [];
+
+    // ADMIN → get all receipts
+    if (type === "admin") {
+      receipts = await Receipt.find();
+    }
+
+    // MANAGER → filter by branch via Enquiry
+    if (type === "manager") {
+      // 1️⃣ get enquiry IDs for branch
+      const enquiries = await Enquiry.find(
+        { "location.value": branch },
+        { _id: 1 }
+      );
+
+      const enquiryIds = enquiries.map(e => e._id);
+
+      // 2️⃣ get receipts using enquiry_id
+      receipts = await Receipt.find({
+        assessmentId: { $in: enquiryIds }
       });
     }
-  }
-);
 
-module.exports = getAllReceipts;
+    return res.status(200).json(receipts);
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Server Error",
+    });
+  }
+});
+
+module.exports = router;

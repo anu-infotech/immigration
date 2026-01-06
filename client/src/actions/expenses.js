@@ -23,9 +23,16 @@ export const getExpenses = (assessmentId) => {
 // Get all the reciepts from the database
 
 export const getAllExpenses = () => {
+  const branch = localStorage.getItem('branch');
+  const user = JSON.parse(localStorage.getItem("user"));
+  const type = user.type;
   return async (dispatch) => {
     try {
-      const res = await server.get("/api/expenses");
+      const res = await server.get("/api/expenses",{
+        params: {
+          branch,type
+        },
+      });
       dispatch({
         type: EXPENSE,
         payload: res.data,

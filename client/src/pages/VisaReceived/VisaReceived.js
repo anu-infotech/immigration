@@ -223,12 +223,13 @@ class VisaReceived extends React.Component {
         );
       }
       if(this.role == 'manager'){
+        const selected_branch = localStorage.getItem("branch");
         return (
           <div>
               <MUIDataTable
                   title={"Visa Received Assessments"}
                   data={this.props.assessments.filter(
-                    (assessment) => assessment.location.value === this.selected_branch
+                    (assessment) => assessment.location.value === selected_branch
                   )}
                   columns={columns}
                   options={options}

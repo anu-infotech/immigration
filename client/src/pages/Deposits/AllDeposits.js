@@ -7,96 +7,69 @@ import {
 } from "../../actions/assessment";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import MUIDataTable from "mui-datatables";
-import { Button } from "reactstrap";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { FontAwesome } from "react-web-vector-icons";
 import { Link } from "react-router-dom";
+import { getBranchesList } from "../../actions/branches";
 
 class AllDeposits extends React.Component {
+  state = { running: true };
+
   async componentDidMount() {
     await this.props.getActiveAssessments();
+
     this.user = JSON.parse(localStorage.getItem("user"));
     this.role = this.user.type;
+    this.selectedBranch = localStorage.getItem("branch");
+
+    const branches = await getBranchesList();
+    this.branches = branches;
+
+    this.branchDeposits = {};
     this.offers = [];
-    this.adminGsp = [];
-    this.adminBat = [];
 
-    const gurdaspurFiltered = this.props.assessments.filter((assessment) => {
-      if (assessment.location.value === "gurdaspur") {
-        return assessment;
+    /* INIT BRANCHES */
+    branches.forEach((b) => {
+      this.branchDeposits[b.slug] = [];
+    });
+
+    /* ADMIN → BRANCH WISE */
+    this.props.assessments.forEach((assessment) => {
+      const branch = assessment.location?.value;
+      if (branch && this.branchDeposits[branch]) {
+        assessment.deposits.forEach((dep) => {
+          this.branchDeposits[branch].push(dep);
+        });
       }
     });
 
-    const allApplicationsGsp = gurdaspurFiltered.map((application) => {
-      return application.deposits;
-    });
-
-    for (let index = 0; index < allApplicationsGsp.length; index++) {
-      allApplicationsGsp[index].map((app) => {
-        return this.adminGsp.push(app);
-      });
-    }
-
-    const batalaFiltered = this.props.assessments.filter((assessment) => {
-      if (assessment.location.value === "batala") {
-        return assessment;
+    /* NON-ADMIN → OWN */
+    const email = this.user.email;
+    this.props.assessments.forEach((assessment) => {
+      if (
+        assessment.case_handled_by &&
+        assessment.case_handled_by.email === email
+      ) {
+        assessment.deposits.forEach((dep) => {
+          this.offers.push(dep);
+        });
       }
     });
 
-    const allApplicationsBat = batalaFiltered.map((application) => {
-      return application.deposits;
-    });
-
-    for (let index = 0; index < allApplicationsBat.length; index++) {
-      allApplicationsBat[index].map((app) => {
-        return this.adminBat.push(app);
-      });
-    }
-
-    const filteredItems = this.props.assessments.filter((assessment) => {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const email = user.email;
-      if (assessment.case_handled_by) {
-        if (assessment.case_handled_by.email === email) {
-          return assessment;
-        }
-      }
-    });
-
-    const allApplications = filteredItems.map((application) => {
-      return application.deposits;
-    });
-
-    for (let index = 0; index < allApplications.length; index++) {
-      allApplications[index].map((app) => {
-        return this.offers.push(app);
-      });
-    }
     this.setState({ running: false });
   }
 
-  state = { running: true };
-
   render() {
-    if (!this.props.assessments || this.state.running === true) {
+    if (!this.props.assessments || this.state.running) {
       return (
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <PacmanLoader size={30} color={"#FEB049"} loading={true} />
+        <div style={{ position: "absolute", top: "50%", left: "50%" }}>
+          <PacmanLoader size={30} color={"#FEB049"} loading />
         </div>
       );
-    } else {
-      const columns = [
+    }
+
+    const columns = [
         {
           name: "name",
           label: "Client",
@@ -163,7 +136,7 @@ class AllDeposits extends React.Component {
               const course = assessment.offerLetters.find(
                 (offer) => offer._id == value
               );
-
+              if(course){
               return (
                 <div>
                   <span>{course.university.name}</span>
@@ -178,6 +151,7 @@ class AllDeposits extends React.Component {
                   <span>{course.applicationType.label}</span>
                 </div>
               );
+              }
             },
           },
         },
@@ -194,8 +168,10 @@ class AllDeposits extends React.Component {
               const course = assessment.offerLetters.find(
                 (offer) => offer._id == value
               );
-
-              return course.intake
+              if(course){
+                return course.intake
+              }
+              
             },
             filter: true,
             sort: true,
@@ -312,68 +288,68 @@ class AllDeposits extends React.Component {
         },
       ];
 
-      const options = {
-        selectableRows: false,
-        download: false,
-        print: false,
-        filterType: "multiselect",
-        onDownload: (buildHead, buildBody, columns, data) => {
-          return "\uFEFF" + buildHead(columns) + buildBody(data);
-        },
-      };
-      if (this.role === "admin") {
-        return (
-          <Tabs>
-            <TabList>
-              <Tab>Gurdaspur</Tab>
-              <Tab>Batala</Tab>
-            </TabList>
+    const options = {
+      selectableRows: false,
+      download: false,
+      print: false,
+      filterType: "multiselect",
+    };
 
-            <TabPanel>
-              <div>
-                <MUIDataTable
-                  title={"Applications"}
-                  data={this.adminGsp.reverse()}
-                  columns={columns}
-                  options={options}
-                />
-              </div>
-            </TabPanel>
-            <TabPanel>
-              <div>
-                <MUIDataTable
-                  title={"Applications"}
-                  data={this.adminBat.reverse()}
-                  columns={columns}
-                  options={options}
-                />
-              </div>
-            </TabPanel>
-          </Tabs>
-        );
-      }
+    /* 🔹 ADMIN */
+    if (this.role === "admin") {
       return (
-        <div>
-          <MUIDataTable
-            title={"Applications"}
-            data={this.offers.reverse()}
-            columns={columns}
-            options={options}
-          />
-        </div>
+        <Tabs>
+          <TabList>
+            {this.branches.map((b) => (
+              <Tab key={b.slug}>{b.name}</Tab>
+            ))}
+          </TabList>
+
+          {this.branches.map((b) => (
+            <TabPanel key={b.slug}>
+              <MUIDataTable
+                title="Deposits"
+                data={this.branchDeposits[b.slug].reverse()}
+                columns={columns}
+                options={options}
+              />
+            </TabPanel>
+          ))}
+        </Tabs>
       );
     }
+
+    /* 🔹 MANAGER */
+    if (this.role === "manager") {
+      return (
+        <MUIDataTable
+          title="Deposits"
+          data={this.branchDeposits[this.selectedBranch].reverse()}
+          columns={columns}
+          options={options}
+        />
+      );
+    }
+
+    /* 🔹 USER */
+    return (
+      <MUIDataTable
+        title="Deposits"
+        data={this.offers.reverse()}
+        columns={columns}
+        options={options}
+      />
+    );
   }
 }
 
-const mapStateToProps = (state) => {
-  return { assessments: state.assessment };
-};
-const decoratedComponent = withRouter(
+const mapStateToProps = (state) => ({
+  assessments: state.assessment,
+});
+
+export default withRouter(
   connect(mapStateToProps, {
     getActiveAssessments,
-    deleteApplication: deleteApplication,
+    deleteApplication,
   })(AllDeposits)
 );
-
-export default decoratedComponent;

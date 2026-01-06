@@ -250,10 +250,7 @@ const Course = ({ courses, getCourses, deleteCourse }) => {
       <Tabs style={{ zIndex: -1 }}>
         <TabList>
           <Tab>Courses</Tab>
-          {role == 'admin' && (
-            <Tab>Add Course</Tab>
-          )}
-          
+          <Tab>Add Course</Tab>
         </TabList>
 
         <TabPanel>

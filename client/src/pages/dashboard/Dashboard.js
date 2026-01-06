@@ -55,8 +55,18 @@ class Dashboard extends React.Component {
     const expecteds = [];
     let assessments;
 
-    if (this.role === "admin" || this.role === "manager") {
+    if (this.role === "admin") {
       assessments = this.props.assessments;
+    } 
+    else if (this.role === "manager") {
+      assessments = this.props.assessments.filter((assessment) => {
+        const branch = localStorage.getItem("branch");
+        if (assessment.location) {
+          if (assessment.location.value === branch) {
+            return assessment;
+          }
+        }
+      });
     } else {
       assessments = this.props.assessments.filter((assessment) => {
         const user = JSON.parse(localStorage.getItem("user"));
