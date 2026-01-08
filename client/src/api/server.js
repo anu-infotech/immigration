@@ -24,5 +24,5 @@ if (user) {
   });
 }
 // http://72.61.239.235
-// https://admin.aussiehub.co.in
+// https://admin.aussiehub.in
 export default server;

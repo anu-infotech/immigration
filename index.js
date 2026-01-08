@@ -106,10 +106,7 @@ const getBranchesRouter = require("./routes/branches/getBranches");
 
 const softDeleteAdminRouter = require("./routes/admins/softDeleteAdmin");
 
-// const MONGO_URI =
-//   "mongodb+srv://hardilsingh87:Hardil@123@cluster0.byanf.gcp.mongodb.net/aussie-hub-db?retryWrites=true&w=majority";
-
- const MONGO_URI =  "mongodb+srv://zenlifedeals_db_user:sYd7elihaCoLTHjN@cluster0.liz0sm3.mongodb.net/aussie-hub-db?retryWrites=true&w=majority";
+ const MONGO_URI = "mongodb+srv://zenlifedeals_db_user:sYd7elihaCoLTHjN@cluster0.liz0sm3.mongodb.net/aussie-hub-db?retryWrites=true&w=majority";
 
   // Test
   const MONGO_UR2 =
