@@ -114,7 +114,7 @@ const softDeleteAdminRouter = require("./routes/admins/softDeleteAdmin");
 
   
 mongoose.connect(
-  MONGO_UR2,
+  MONGO_URI,
   {
     useUnifiedTopology: true,
     useNewUrlParser: true,

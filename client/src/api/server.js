@@ -7,7 +7,7 @@ if (user) {
   const type = user.type === "admin" ? true : false;
   const email = user.email;
   server = Axios.create({
-    baseURL: "http://72.61.239.235",
+    baseURL: "https://admin.aussiehub.in",
     params: {
       location: localStorage.getItem("branch"),
       admin: type,
@@ -16,7 +16,7 @@ if (user) {
   });
 } else {
   server = Axios.create({
-    baseURL: "http://72.61.239.235",
+    baseURL: "https://admin.aussiehub.in",
     params: {
       location: localStorage.getItem("branch"),
       admin: null,
