@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "aussiehub-415004",
+  "private_key_id": "467c3a506b03e0b0ac9f5d3391bec690b4ca20ec",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC80mUcX69APYij\njjuRjKfN/At5rGjt+VYJPeFUmJh7WIong0mHkM0vsFqpDwgZeOVqJXKqZCibGc9g\niCEnXMLI7CpQJ1GqWtt5VKYjZahXQyrj4B9ZB8sPBsfdD5hfp9114oHAEtIr8Qtk\n6BObPpahCUElp9KYYpWIrV8m4XCJxqSwdX38bDkfgVNbq+yO1yfbLch6vcINE5lG\nZkv0eLGPCV8qB2psEiZNejPeQFQWUuWLHlb6UNi0iI4n/ythYyIsBe3Gjn2dQkCH\n6+FptX467RcKGto3Pb5k60av3TSOU2ngF7H9mWfFx0j2CJmCGW/5b16X+iEKxJbb\nqr48vky1AgMBAAECggEAA1+zBM3E4N34mguJjvE3clvFjLgC6/Wfjuy3IP7VAqcz\nWL9kyfJRaD+7bvfgyiu51aqzoM3HV/YfGXd1ODHVHSfzHZmGQQf8ke9sRIeleWGu\n24F+reWQwET7vzxvGY5zS47viJINhVF6RaRL7WMx59C1hEm6XpSsXVPTtmsiyqNl\nH62KwAQL+1XfDfCK0SBR+dh6kUXn1LfcHGEOt1heCKOFMopW0BxKWUV5GSfji9/A\nJ65qCtTESCOJbsXrARJ+A3kNnmfgYMhN/yJlkzJyvjAfZl2pHy4PwRxByj2zk2LI\nnW6AukjeA1dcY6odTvkEJPhCfcXsqaCtfeAlqLr95QKBgQDrtnz0imLJ4VOeamlY\nwaFhWxlGFJ8hBxSdcRe+N5cNP+RdhLyiUFfuekwaDKwZAqNOOVlQRK1Z0pb5D7ti\nPvK9EBzyCGIkZoXgm5EvQrofNS5SxZFao615hbEHeuRZljUXTlqJUtbtoxAUQruM\n/OBvDsp1iwIrP4P+/IW7YJMeMwKBgQDNEr9iaOY84KSMiilFZAaIKIi5G3fNRCaX\nN6XCxguIiySa4fNB/4DXEtYi3PMs6y1KDafKwURfbCYk4HDej6OIUF0MedtJ/DdJ\nF1XzK5Fa8sFC9WJ6XU561SsvI5gMW4Kq1+OZvP5QHZsQL5VquZ6iei/ZhY3V+U5X\nCkp/D56xdwKBgQCW4Bc5e/7h093vL5PA4SgIJgSWbAqzXFHguQwGkJSaQYROK/GG\nP8EY/6UIo4Xg+GRJZMH7dAo1zWsffudlan97bv3oGl+fhxQ4gbs7sg1qfmLpTlbM\n2qnmeCGpdQsHIPNYuKmQ7rpuH4riPRjJlO+fhqsm89RulFhL9Z0wJA/nKwKBgBHQ\naBmnXSC6rvCaa91gRAT96GqUDUMigWuvZNHXnFbfJ23g5N290TZdp4ZdxS4Iu+Vr\n7EB7q3HSljmr2YIr3hvQR1T3HOp/Y1oREeFOzpCk987WPBi/FDstW1P79pBUPrSS\njm3jcgAJole0mnkr6LDahl+R73E/9+MtvKzu8W0fAoGAOjhni12bVBX5B7svICRY\ncxnFfv8n4sGWIp1Rd2AhRxbFZA9Z4n5HU75eCCOstA0khFB6jCB85FqduWc0ccGw\nHmtEIvxdUK1BtpYOlli3c22jCm8ePNojUpOE3aDTDN3nbNrompt8z+vItFX80Lhu\nRLxOox5k0BefEdSzSZhcHpo=\n-----END PRIVATE KEY-----\n",
+  "client_email": "aussiehub@aussiehub-415004.iam.gserviceaccount.com",
+  "client_id": "110869186249727602864",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/aussiehub%40aussiehub-415004.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
