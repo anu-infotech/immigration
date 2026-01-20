@@ -5,7 +5,7 @@ const router = express.Router();
 
 const getStatsRouter = router.get("/api/getStats", async (req, res) => {
   const { email, admin, type, branch } = req.query;
-  console.log(branch);
+  // console.log(branch);
   try {
     if (type == "admin") {
       let adminApplication = [];
@@ -117,9 +117,11 @@ const getStatsRouter = router.get("/api/getStats", async (req, res) => {
         accepted: true,
       });
       const rejected = await Enquiry.find({
+        "location.value": branch,
         accepted: false,
       });
       const unattended = await Enquiry.find({
+        "location.value": branch,
         accepted: null,
       });
 

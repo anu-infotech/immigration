@@ -22,16 +22,6 @@ const firebaseConfig = {
 //   measurementId: "G-96HJC35DZD"
 // };
 
-// const firebaseConfig = {
-//   apiKey: "AIzaSyAtSkTG62PnMSGDFf_K8cDBSWgZkrutOlc",
-//   authDomain: "my-first-node-app-21138.firebaseapp.com",
-//   projectId: "my-first-node-app-21138",
-//   storageBucket: "my-first-node-app-21138.firebasestorage.app",
-//   messagingSenderId: "430852116444",
-//   appId: "1:430852116444:web:725b98ef6fa293d84e0919",
-//   measurementId: "G-68BYXWDBXS"
-// };
-
 initializeApp(firebaseConfig);
 
 uploadImage = async (file) => {

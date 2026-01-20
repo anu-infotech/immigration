@@ -316,6 +316,7 @@ const ViewAssessment = ({
             {statusUpdate === false ? "Active" : "Updating Please wait..."}
           </Button>
           <Button
+            className={role == 'admin' || role == 'manager'?'':'d-none'}
             color='danger'
             style={{ marginLeft: "15px" }}
             onClick={() => updateStatus(assessment.ref_no, false)}
@@ -325,7 +326,7 @@ const ViewAssessment = ({
         </React.Fragment>
       );
     } else if (assessment.accepted === true) {
-      if (assessment.case_handled_by.email === email || role === "admin") {
+      if (assessment.case_handled_by.email === email || role === "admin" || role === 'manager') {
         return (
           <Button
             color='danger'
@@ -671,7 +672,7 @@ const ViewAssessment = ({
                     <FollowUps />
                   </TabPanel>
                   <TabPanel>
-                    {role === "admin" ? (
+                    {role === "admin" || role === "manager" ? (
                       <TransferAssessment />
                     ) : (
                       "Feature Not available for counsellors."

@@ -117,7 +117,7 @@ class NewAssessments extends React.Component {
                     View
                   </Button>
                   <Button
-                    className={this.role != 'admin'?'d-none':''}
+                    className={this.role == 'admin'?'':'d-none'}
                     color="danger"
                     style={{ marginLeft: "10px" }}
                     size={"sm"}
