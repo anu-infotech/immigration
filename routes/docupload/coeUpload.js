@@ -27,6 +27,7 @@ const uploadCOERouter = router.post("/api/coe/upload", async (req, res) => {
         },
         { new: true },
         async (err, doc) => {
+          console.log(err);
           if (err) return res.status(400).send("Something Went wrong");
           await Admin.findOneAndUpdate(
             { email: caseHandler },
