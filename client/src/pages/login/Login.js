@@ -199,7 +199,7 @@ class Login extends React.Component {
                 <Select
                   name='location'
                   onChange={(value) => this.setState({ branch: value })}
-                  defaultValue={{ value: "gurdaspur", label: "Gurdaspur" }}
+                  defaultValue={{ value: "amritsar", label: "Amrtisar" }}
                   required={true}
                   options={this.state.branchOptions}
                 />
