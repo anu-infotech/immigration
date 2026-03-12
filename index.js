@@ -116,9 +116,10 @@ const softDeleteAdminRouter = require("./routes/admins/softDeleteAdmin");
 mongoose.connect(
   MONGO_URI,
   {
-    useUnifiedTopology: true,
     useNewUrlParser: true,
-    useFindAndModify: false,
+    useUnifiedTopology: true,
+    maxPoolSize: 20,
+    serverSelectionTimeoutMS: 5000
   },
   () => {
     console.log("Connection with database established.");
